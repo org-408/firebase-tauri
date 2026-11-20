@@ -75,3 +75,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: The Swift plugins compile with the Firebase iOS SDK (and Tauri's Swift package is in place)
         run: cargo check --workspace --target aarch64-apple-ios-sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: The example app builds and links for the Simulator (Firebase's binary frameworks, docs/TECH-NOTES.md §9)
+        working-directory: examples/firebase-tester
+        run: |
+          npx tauri ios init
+          npx tauri ios build --debug --target aarch64-sim
