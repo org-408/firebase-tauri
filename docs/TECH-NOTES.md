@@ -76,3 +76,14 @@ From the Firebase SDKs' behaviour; **not yet verified in a running app** (see RO
 On iOS each Tauri plugin is a static library that includes its Swift package dependencies, so both plugins contain
 `FirebaseCore`. The linker takes duplicate symbols from the first library, so the two plugins must pin the same Firebase iOS
 SDK version. `apiParity` checks the two `Package.swift` files against upstream, which pins one version for both.
+
+## 9. iOS: Firebase Analytics' binary frameworks
+
+`FirebaseAnalytics`, `GoogleAppMeasurement`, `GoogleAppMeasurementIdentitySupport` and `GoogleAdsOnDeviceConversion` are binary
+xcframeworks in the Firebase iOS SDK. swift-rs (which builds a Tauri plugin's Swift package) downloads them but links nothing from
+them, so an app using the plugin failed to link (`Undefined symbols … FIRConsentStatus`, found 2026-11-21 building
+`examples/firebase-tester`). `crates/tauri-plugin-firebase-analytics/ios_binaries.rs` (included by `build.rs`) takes the slice for
+the target out of each xcframework (`lipo -thin`), and links it with `+bundle,+whole-archive`, so it is inside the static
+library the app's Xcode project links (whole-archive for the Objective-C categories). The system libraries are linked too
+(`sqlite3`, `z`, `c++`, StoreKit, AdSupport, …). The list of xcframeworks is what the `FirebaseAnalytics` product needs today; a new
+one in a Firebase release shows up as a link error in the example app (the iOS CI job links it). `FirebaseCrashlytics` has no binary target.

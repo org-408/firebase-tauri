@@ -18,9 +18,12 @@ const COMMANDS: &[&str] = &[
   "initiate_on_device_conversion_measurement_with_hashed_phone_number",
 ];
 
+include!("ios_binaries.rs");
+
 fn main() {
   tauri_plugin::Builder::new(COMMANDS)
     .android_path("android")
     .ios_path("ios")
     .build();
+  link_ios_binaries();
 }
