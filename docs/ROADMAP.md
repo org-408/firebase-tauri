@@ -11,5 +11,6 @@ The task number is the GitHub issue number.
 - Verification in a running app on an iOS simulator and an Android emulator with a Firebase **test** project, including
   Crashlytics' automatic collection (TECH-NOTES §6).
 - `AnalyticsWithoutAdIdSupport` for iOS (TECH-NOTES §7).
+- Analytics on iOS with Xcode 26 (TECH-NOTES §9, "Xcode version"); then CI can build the whole workspace and the example app on the runners.
 - Publishing to crates.io and npm (docs/WORKFLOW.md §3): after the maintainers confirm.
 - Swift and Java unit tests of the helpers (consent mapping, bundle conversion, email and phone validation).

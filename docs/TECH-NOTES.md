@@ -87,3 +87,10 @@ the target out of each xcframework (`lipo -thin`), and links it with `+bundle,+w
 library the app's Xcode project links (whole-archive for the Objective-C categories). The system libraries are linked too
 (`sqlite3`, `z`, `c++`, StoreKit, AdSupport, …). The list of xcframeworks is what the `FirebaseAnalytics` product needs today; a new
 one in a Firebase release shows up as a link error in the example app (the iOS CI job links it). `FirebaseCrashlytics` has no binary target.
+
+### Xcode version
+
+Verified with **Xcode 27.0**. With Xcode 26.6 (the newest on GitHub's macOS runners, 2026-11-20) the Analytics plugin does not build:
+swift-rs calls `swift build --sdk <iOS SDK>`, and Xcode 26's SwiftPM then resolves the Firebase binary frameworks for macOS
+(`'Cocoa/Cocoa.h' file not found` in `FirebaseAnalytics-umbrella.h`). Crashlytics has no binary targets and is checked in CI. Supporting
+Xcode 26 for Analytics is on the ROADMAP.

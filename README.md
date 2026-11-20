@@ -61,6 +61,8 @@ import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
 import { FirebaseAnalytics } from 'tauri-plugin-firebase-analytics-api';
 ```
 
+**iOS needs Xcode 27 for Analytics** (see [docs/TECH-NOTES.md §9](docs/TECH-NOTES.md)); Crashlytics builds with Xcode 26 as well.
+
 ## Firebase setup
 
 The plugins configure Firebase themselves (`FirebaseApp.configure()` on iOS; the Google Services plugin on Android),
@@ -126,7 +128,7 @@ npm run verify                         # format, build, types, tests (including 
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo check --workspace --target aarch64-apple-ios-sim     # Swift (needs Xcode)
+cargo check --workspace --target aarch64-apple-ios-sim --jobs 1  # Swift (Xcode 27; --jobs 1: the two plugins' SwiftPM downloads collide)
 cargo check --workspace --target aarch64-linux-android     # then `gradle -p crates/<crate>/android compileDebugJavaWithJavac`
 ```
 
