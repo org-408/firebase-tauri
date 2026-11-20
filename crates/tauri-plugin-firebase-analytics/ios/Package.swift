@@ -4,6 +4,7 @@ import PackageDescription
 let package = Package(
     name: "tauri-plugin-firebase-analytics",
     platforms: [
+        .macOS(.v10_15),
         .iOS(.v15),
     ],
     products: [
