@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = ["crates/tauri-plugin-firebase-analytics", "crates/tauri-plugin-firebase-crashlytics"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT AND Apache-2.0"
+authors = ["org-408"]
+repository = "https://github.com/org-408/firebase-tauri"
+homepage = "https://github.com/org-408/firebase-tauri"
+keywords = ["tauri", "tauri-plugin", "firebase", "analytics", "crashlytics"]
+categories = ["api-bindings"]
+# Planned for crates.io, not published yet (docs/WORKFLOW.md §3)
+publish = false
+
+[workspace.dependencies]
+serde = "1"
+serde_json = "1"
+thiserror = "2"
+tauri = "2.12"
+tauri-plugin = { version = "2.7", features = ["build"] }

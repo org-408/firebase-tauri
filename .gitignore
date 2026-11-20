@@ -1,0 +1,11 @@
+/target
+node_modules/
+.DS_Store
+*.log
+.tauri/
+.build/
+.swiftpm/
+.env
+.env.*
+!.env.example
+**/ios/Package.resolved

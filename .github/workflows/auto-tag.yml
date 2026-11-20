@@ -1,0 +1,54 @@
+name: Auto tag
+
+# When a change that raises the version (Cargo.toml's workspace.package.version and the package.json files) reaches
+# develop, tag that merge commit `v<version>` (annotated). Nothing happens if the tag exists. Run it by hand to tag
+# another commit.
+on:
+  push:
+    branches: [develop]
+    paths: ['Cargo.toml', 'package.json', 'crates/*/package.json']
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: The commit to tag (empty for develop's head)
+        type: string
+        default: ''
+
+concurrency:
+  group: auto-tag
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+
+      - name: Tag the version
+        shell: bash
+        env:
+          TARGET: ${{ inputs.sha || github.sha }}
+        run: |
+          cargo=$(sed -n '/^\[workspace.package\]/,/^\[/{s/^version = "\(.*\)"$/\1/p}' Cargo.toml)
+          for pkg in package.json crates/tauri-plugin-firebase-analytics/package.json crates/tauri-plugin-firebase-crashlytics/package.json; do
+            npm=$(node -p "require('./$pkg').version")
+            if [ -z "$cargo" ] || [ "$cargo" != "$npm" ]; then
+              echo "::error::Cargo.toml's version (${cargo:-none}) and $pkg's ($npm) differ"
+              exit 1
+            fi
+          done
+          tag="v$cargo"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "tag $tag exists, nothing to do"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "$tag" "$TARGET"
+          git push origin "refs/tags/$tag"
+          echo "tagged $TARGET $tag"

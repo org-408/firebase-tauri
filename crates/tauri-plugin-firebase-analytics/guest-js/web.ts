@@ -1,0 +1,136 @@
+// Derived from @capacitor-firebase/analytics 8.6.0 (Apache-2.0, Copyright Robin Genz and the Capawesome contributors),
+// modified for Tauri 2 (see NOTICE).
+import { WebPlugin } from './web-plugin.js';
+import type { ConsentSettings, ConsentStatusString } from 'firebase/analytics';
+import {
+  getAnalytics,
+  logEvent,
+  setAnalyticsCollectionEnabled,
+  setConsent,
+  setUserId,
+  setUserProperties,
+} from 'firebase/analytics';
+
+import type {
+  FirebaseAnalyticsPlugin,
+  GetAppInstanceIdResult,
+  InitiateOnDeviceConversionMeasurementWithEmailAddressOptions,
+  InitiateOnDeviceConversionMeasurementWithPhoneNumberOptions,
+  InitiateOnDeviceConversionMeasurementWithHashedEmailAddressOptions,
+  InitiateOnDeviceConversionMeasurementWithHashedPhoneNumberOptions,
+  IsEnabledResult,
+  LogEventOptions,
+  LogTransactionOptions,
+  SetConsentOptions,
+  SetCurrentScreenOptions,
+  SetEnabledOptions,
+  SetSessionTimeoutDurationOptions,
+  SetUserIdOptions,
+  SetUserPropertyOptions,
+} from './definitions.js';
+import { ConsentStatus, ConsentType } from './definitions.js';
+
+export class FirebaseAnalyticsWeb extends WebPlugin implements FirebaseAnalyticsPlugin {
+  public async getAppInstanceId(): Promise<GetAppInstanceIdResult> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async setConsent(options: SetConsentOptions): Promise<void> {
+    const status: ConsentStatusString = options.status === ConsentStatus.Granted ? 'granted' : 'denied';
+    const consentSettings: ConsentSettings = {};
+    switch (options.type) {
+      case ConsentType.AdPersonalization:
+        consentSettings.ad_personalization = status;
+        break;
+      case ConsentType.AdStorage:
+        consentSettings.ad_storage = status;
+        break;
+      case ConsentType.AdUserData:
+        consentSettings.ad_user_data = status;
+        break;
+      case ConsentType.AnalyticsStorage:
+        consentSettings.analytics_storage = status;
+        break;
+      case ConsentType.FunctionalityStorage:
+        consentSettings.functionality_storage = status;
+        break;
+      case ConsentType.PersonalizationStorage:
+        consentSettings.personalization_storage = status;
+        break;
+    }
+    setConsent(consentSettings);
+  }
+
+  public async setUserId(options: SetUserIdOptions): Promise<void> {
+    const analytics = getAnalytics();
+    setUserId(analytics, options.userId);
+  }
+
+  public async setUserProperty(options: SetUserPropertyOptions): Promise<void> {
+    const analytics = getAnalytics();
+    setUserProperties(analytics, {
+      [options.key]: options.value,
+    });
+  }
+
+  public async setCurrentScreen(options: SetCurrentScreenOptions): Promise<void> {
+    const analytics = getAnalytics();
+    logEvent(analytics, 'screen_view', {
+      firebase_screen: options.screenName || undefined,
+      firebase_screen_class: options.screenClassOverride || undefined,
+    });
+  }
+
+  public async logEvent(options: LogEventOptions): Promise<void> {
+    const analytics = getAnalytics();
+    logEvent(analytics, options.name, options.params);
+  }
+
+  public async logTransaction(_options: LogTransactionOptions): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async setSessionTimeoutDuration(_options: SetSessionTimeoutDurationOptions): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async setEnabled(_options: SetEnabledOptions): Promise<void> {
+    const analytics = getAnalytics();
+    setAnalyticsCollectionEnabled(analytics, _options.enabled);
+  }
+
+  public async isEnabled(): Promise<IsEnabledResult> {
+    const enabled = (window as any)['ga-disable-analyticsId'] === true;
+    return {
+      enabled,
+    };
+  }
+
+  public async resetAnalyticsData(): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async initiateOnDeviceConversionMeasurementWithEmailAddress(
+    _options: InitiateOnDeviceConversionMeasurementWithEmailAddressOptions,
+  ): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async initiateOnDeviceConversionMeasurementWithPhoneNumber(
+    _options: InitiateOnDeviceConversionMeasurementWithPhoneNumberOptions,
+  ): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async initiateOnDeviceConversionMeasurementWithHashedEmailAddress(
+    _options: InitiateOnDeviceConversionMeasurementWithHashedEmailAddressOptions,
+  ): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  public async initiateOnDeviceConversionMeasurementWithHashedPhoneNumber(
+    _options: InitiateOnDeviceConversionMeasurementWithHashedPhoneNumberOptions,
+  ): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+}

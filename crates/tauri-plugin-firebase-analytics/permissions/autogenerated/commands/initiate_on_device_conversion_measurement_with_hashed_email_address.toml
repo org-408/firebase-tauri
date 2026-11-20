@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-initiate-on-device-conversion-measurement-with-hashed-email-address"
+description = "Enables the initiate_on_device_conversion_measurement_with_hashed_email_address command without any pre-configured scope."
+commands.allow = ["initiate_on_device_conversion_measurement_with_hashed_email_address"]
+
+[[permission]]
+identifier = "deny-initiate-on-device-conversion-measurement-with-hashed-email-address"
+description = "Denies the initiate_on_device_conversion_measurement_with_hashed_email_address command without any pre-configured scope."
+commands.deny = ["initiate_on_device_conversion_measurement_with_hashed_email_address"]

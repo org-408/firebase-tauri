@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-set-current-screen"
+description = "Enables the set_current_screen command without any pre-configured scope."
+commands.allow = ["set_current_screen"]
+
+[[permission]]
+identifier = "deny-set-current-screen"
+description = "Denies the set_current_screen command without any pre-configured scope."
+commands.deny = ["set_current_screen"]

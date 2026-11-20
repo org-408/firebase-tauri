@@ -1,0 +1,50 @@
+{
+  "name": "tauri-plugin-firebase-analytics-api",
+  "version": "0.1.0",
+  "description": "Firebase Analytics for Tauri 2 on iOS and Android: a port of @capacitor-firebase/analytics with the same API",
+  "license": "MIT AND Apache-2.0",
+  "author": "org-408",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/org-408/firebase-tauri.git",
+    "directory": "crates/tauri-plugin-firebase-analytics"
+  },
+  "keywords": [
+    "tauri",
+    "tauri-plugin",
+    "firebase",
+    "firebase-analytics",
+    "analytics",
+    "ios",
+    "android",
+    "capacitor-firebase"
+  ],
+  "type": "module",
+  "main": "./dist-js/index.js",
+  "types": "./dist-js/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-js/index.d.ts",
+      "import": "./dist-js/index.js"
+    }
+  },
+  "files": [
+    "dist-js",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.0"
+  },
+  "peerDependencies": {
+    "firebase": "^12.6.0"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    }
+  }
+}

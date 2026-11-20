@@ -1,0 +1,1 @@
+-keep class com.org408.tauri.firebase.analytics.** { *; }
