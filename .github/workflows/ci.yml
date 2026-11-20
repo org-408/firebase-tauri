@@ -73,6 +73,14 @@ jobs:
         with:
           targets: aarch64-apple-ios, aarch64-apple-ios-sim
       - uses: Swatinem/rust-cache@v2
+      - name: The newest Xcode
+        # With Xcode 26's SwiftPM, swift-rs's `swift build --sdk <iOS SDK>` resolves Firebase's binary frameworks for macOS
+        # ("Cocoa/Cocoa.h file not found"); Xcode 27's builds for the SDK it is given (docs/TECH-NOTES.md §9)
+        run: |
+          ls -d /Applications/Xcode_*.app
+          newest=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$newest/Contents/Developer"
+          xcodebuild -version
       - name: The Swift plugins compile with the Firebase iOS SDK (and Tauri's Swift package is in place)
         # --jobs 1: both plugins' Swift builds download the same Firebase binaries into SwiftPM's shared cache, and
         # in parallel they collide ("already exists in file system")
