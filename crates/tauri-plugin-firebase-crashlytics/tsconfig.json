@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "guest-js",
+    "outDir": "dist-js"
+  },
+  "include": ["guest-js"]
+}

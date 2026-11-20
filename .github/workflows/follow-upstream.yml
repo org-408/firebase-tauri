@@ -1,0 +1,59 @@
+name: Follow upstream
+
+# The Capacitor packages this repository ports (@capacitor-firebase/analytics and crashlytics) are pinned exactly, and
+# so are the Firebase SDK versions they use. Every day this opens a pull request when a new release is out:
+#   - package.json's pinned releases (the reference the apiParity test checks the API against)
+#   - the Firebase iOS SDK (ios/Package.swift) and Android SDK (android/build.gradle.kts) versions, as the new release uses them
+# The pull request body carries the upstream source diff, which the Swift, Java and TypeScript here must follow
+# (docs/WORKFLOW.md §6). It starts CI itself: a pull request opened with GITHUB_TOKEN does not trigger CI, but a
+# workflow_dispatch run does, and its checks attach to the branch's head commit.
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  follow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Open a pull request for a new release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm ci --ignore-scripts
+          node scripts/sync-upstream.mjs > "$RUNNER_TEMP/summary.md"
+          cat "$RUNNER_TEMP/summary.md"
+          if git diff --quiet; then echo "nothing to do"; exit 0; fi
+          npm install --package-lock-only --ignore-scripts
+          analytics=$(node -p "require('./package.json').devDependencies['@capacitor-firebase/analytics']")
+          crashlytics=$(node -p "require('./package.json').devDependencies['@capacitor-firebase/crashlytics']")
+          branch="chore/upstream-analytics-$analytics-crashlytics-$crashlytics"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then echo "$branch exists"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -am "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics"
+          git push origin "$branch"
+          {
+            echo "Follows the upstream releases. CI is started by this workflow (the checks show on the branch's head commit)."
+            echo
+            echo "Before merging: port what changed upstream (see the diff below), run the example app on iOS and Android if native code changed, and bump the version (docs/WORKFLOW.md §2, §6)."
+            echo
+            cat "$RUNNER_TEMP/summary.md"
+          } > "$RUNNER_TEMP/body.md"
+          gh pr create --base develop --head "$branch" \
+            --title "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics" \
+            --body-file "$RUNNER_TEMP/body.md"
+          gh workflow run ci.yml --ref "$branch"

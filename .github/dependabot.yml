@@ -1,0 +1,18 @@
+# Security and version updates for what is not followed by .github/workflows/follow-upstream.yml (that workflow owns
+# @capacitor-firebase/* and the Firebase SDK versions; they must stay in step with upstream, so they are ignored here)
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: '@capacitor-firebase/*'
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

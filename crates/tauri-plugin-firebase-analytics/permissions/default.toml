@@ -1,0 +1,21 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = "Every command: all of @capacitor-firebase/analytics's API, as the Capacitor plugin exposes it"
+permissions = [
+  "allow-get-app-instance-id",
+  "allow-set-consent",
+  "allow-set-user-id",
+  "allow-set-user-property",
+  "allow-set-current-screen",
+  "allow-log-event",
+  "allow-set-session-timeout-duration",
+  "allow-set-enabled",
+  "allow-is-enabled",
+  "allow-reset-analytics-data",
+  "allow-log-transaction",
+  "allow-initiate-on-device-conversion-measurement-with-email-address",
+  "allow-initiate-on-device-conversion-measurement-with-phone-number",
+  "allow-initiate-on-device-conversion-measurement-with-hashed-email-address",
+  "allow-initiate-on-device-conversion-measurement-with-hashed-phone-number",
+]

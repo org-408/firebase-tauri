@@ -1,0 +1,12 @@
+{
+  // Type-checks the tests (the packages build with their own tsconfig.json)
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "verbatimModuleSyntax": false,
+    "types": ["node", "vite/client"]
+  },
+  "include": ["__tests__", "examples/firebase-tester/src", "vitest.config.ts"]
+}

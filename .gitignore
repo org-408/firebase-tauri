@@ -1,0 +1,14 @@
+/target
+node_modules/
+.DS_Store
+*.log
+.tauri/
+.build/
+.swiftpm/
+.env
+.env.*
+!.env.example
+**/ios/Package.resolved
+/examples/firebase-tester/src-tauri/target
+/examples/firebase-tester/src-tauri/gen/schemas
+/examples/firebase-tester/dist

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-did-crash-on-previous-execution"
+description = "Enables the did_crash_on_previous_execution command without any pre-configured scope."
+commands.allow = ["did_crash_on_previous_execution"]
+
+[[permission]]
+identifier = "deny-did-crash-on-previous-execution"
+description = "Denies the did_crash_on_previous_execution command without any pre-configured scope."
+commands.deny = ["did_crash_on_previous_execution"]

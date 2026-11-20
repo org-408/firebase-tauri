@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-initiate-on-device-conversion-measurement-with-phone-number"
+description = "Enables the initiate_on_device_conversion_measurement_with_phone_number command without any pre-configured scope."
+commands.allow = ["initiate_on_device_conversion_measurement_with_phone_number"]
+
+[[permission]]
+identifier = "deny-initiate-on-device-conversion-measurement-with-phone-number"
+description = "Denies the initiate_on_device_conversion_measurement_with_phone_number command without any pre-configured scope."
+commands.deny = ["initiate_on_device_conversion_measurement_with_phone_number"]
