@@ -9,3 +9,6 @@ node_modules/
 .env.*
 !.env.example
 **/ios/Package.resolved
+/examples/firebase-tester/src-tauri/target
+/examples/firebase-tester/src-tauri/gen/schemas
+/examples/firebase-tester/dist

@@ -7,7 +7,8 @@
   "type": "module",
   "workspaces": [
     "crates/tauri-plugin-firebase-analytics",
-    "crates/tauri-plugin-firebase-crashlytics"
+    "crates/tauri-plugin-firebase-crashlytics",
+    "examples/firebase-tester"
   ],
   "scripts": {
     "build": "npm run build -w tauri-plugin-firebase-analytics-api -w tauri-plugin-firebase-crashlytics-api",

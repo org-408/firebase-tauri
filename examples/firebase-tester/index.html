@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>firebase-tester</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: -apple-system, system-ui, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: calc(env(safe-area-inset-top) + 12px) 12px 24px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      #summary {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      #buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
+      pre {
+        font-size: 11px;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>firebase-tauri tester</h1>
+    <div id="summary">running…</div>
+    <div id="buttons"></div>
+    <pre id="log"></pre>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

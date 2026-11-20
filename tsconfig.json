@@ -6,7 +6,7 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "verbatimModuleSyntax": false,
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
-  "include": ["__tests__", "vitest.config.ts"]
+  "include": ["__tests__", "examples/firebase-tester/src", "vitest.config.ts"]
 }

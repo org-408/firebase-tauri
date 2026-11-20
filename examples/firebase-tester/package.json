@@ -1,0 +1,21 @@
+{
+  "name": "firebase-tester",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Tauri app that calls tauri-plugin-firebase-analytics and -crashlytics on iOS and Android",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "tauri-plugin-firebase-analytics-api": "0.1.0",
+    "tauri-plugin-firebase-crashlytics-api": "0.1.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4",
+    "vite": "^8.3.8"
+  }
+}
