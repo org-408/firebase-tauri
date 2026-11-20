@@ -74,7 +74,9 @@ jobs:
           targets: aarch64-apple-ios, aarch64-apple-ios-sim
       - uses: Swatinem/rust-cache@v2
       - name: The Swift plugins compile with the Firebase iOS SDK (and Tauri's Swift package is in place)
-        run: cargo check --workspace --target aarch64-apple-ios-sim
+        # --jobs 1: both plugins' Swift builds download the same Firebase binaries into SwiftPM's shared cache, and
+        # in parallel they collide ("already exists in file system")
+        run: cargo check --workspace --target aarch64-apple-ios-sim --jobs 1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
