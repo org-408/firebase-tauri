@@ -107,6 +107,7 @@ Firebase checks of `examples/firebase-tester` pass on the iOS Simulator (Xcode 2
 ### Verification status (2026-11-21)
 
 All 18 Firebase checks of `examples/firebase-tester` pass against a Firebase test project on the iOS Simulator (Xcode 27.0, iOS 27)
-and on an Android emulator (API 36, arm64), next to the 25 plugin checks (no Firebase project needed). **Not verified:** that a
-native crash reaches the Crashlytics console, and a physical device. `crash()` on Android had no effect at first (Tauri catches what a
-command throws); it now throws from the main thread's message loop and the app dies with `FATAL EXCEPTION: main` (2026-11-21).
+and on an Android emulator (API 36, arm64), next to the 25 plugin checks (no Firebase project needed). **Verified in the Firebase console (Android):** a native crash from `crash()` shows up in Crashlytics as `java.lang.RuntimeException - tester crash`, with
+the plugin's frame `FirebaseCrashlytics.java:19`. `crash()` on Android had no effect at first (Tauri catches what a command throws); it now
+throws from the main thread's message loop and the app dies with `FATAL EXCEPTION: main` (2026-11-21).
+**Not verified:** a crash on iOS reaching the console (needs the dSYM upload step in the README), Analytics events in the console, a physical device.
