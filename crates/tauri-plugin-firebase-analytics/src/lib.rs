@@ -28,6 +28,23 @@ mod mobile;
 mod commands;
 mod error;
 
+// GoogleUtilities' `NSData(GULGzip)` is an Objective-C category: nothing refers to it by symbol, so the app's linker drops
+// it unless the app links with `-ObjC` (Tauri's Xcode project does not), and Analytics then crashes with
+// `+[NSData gul_dataByGzippingData:error:]: unrecognized selector`. Referring to a symbol of the same object file keeps it.
+// docs/TECH-NOTES.md §9.
+#[cfg(target_os = "ios")]
+extern "C" {
+  static GULNSDataZlibErrorDomain: *const std::ffi::c_void;
+}
+#[cfg(target_os = "ios")]
+#[used]
+static KEEP_GOOGLE_UTILITIES_NSDATA: unsafe extern "C" fn() -> *const *const std::ffi::c_void = {
+  unsafe extern "C" fn keep() -> *const *const std::ffi::c_void {
+    std::ptr::addr_of!(GULNSDataZlibErrorDomain)
+  }
+  keep
+};
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
