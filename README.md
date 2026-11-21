@@ -6,6 +6,12 @@ and [`@capacitor-firebase/crashlytics`](https://github.com/capawesome-team/capac
 that keep their API: the same method names, arguments, results and errors. An app moving from Capacitor to Tauri Mobile
 only changes an import.
 
+Status: **v0.1.0, not published to crates.io / npm yet.** Use it from git for now (see [Install](#install)).
+
+**Plan:** the intent is to publish the crates and npm packages. Before that, the plugins are to be adopted in a real app
+(ai-tarot-chat or Fabloom) and shown to work there, and tried on a physical device. See [Known limits](#known-limits) and
+[docs/ROADMAP.md](docs/ROADMAP.md).
+
 | Plugin                                                            | Rust crate                           | npm package                              | Port of                              |
 | ----------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- | ------------------------------------ |
 | [Analytics](crates/tauri-plugin-firebase-analytics/README.md)     | `tauri-plugin-firebase-analytics`    | `tauri-plugin-firebase-analytics-api`    | `@capacitor-firebase/analytics` 8.6.0   |
