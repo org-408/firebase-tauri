@@ -113,6 +113,31 @@ and tracking-transparency prompts.
 - A Rust `panic!` aborts the process: whether it appears in Crashlytics depends on the platform's crash handler. See
   [docs/TECH-NOTES.md §6](docs/TECH-NOTES.md).
 
+## Known limits
+
+What has been run, and what has not (details: [docs/TECH-NOTES.md §9](docs/TECH-NOTES.md)).
+
+**Verified** (2026-11-21, against a real Firebase test project): every method of both plugins runs on the iOS Simulator
+(Xcode 27) and on an Android emulator (API 36), and a native crash on Android shows up in the Crashlytics console.
+
+**Not verified yet:**
+
+- No physical device has been tried, on either platform.
+- An iOS crash reaching the Crashlytics console (it needs the dSYM upload step in your build).
+- Analytics events showing up in the Firebase console (the calls return without error; the console
+  side has not been looked at).
+- A Rust `panic!` on Android: it needs `firebase-crashlytics-ndk`, which is not wired in or tried.
+
+**Limits you will meet:**
+
+- Analytics on iOS needs Xcode 27 (the Swift package resolution of Xcode 26.6 picks macOS slices). Crashlytics alone builds
+  with older Xcode.
+- The iOS CI job covers Crashlytics only and does not run on pull requests.
+- The advertising ID stays at the Capacitor plugins' defaults (see above).
+- Android: `crash()` throws from the main looper, because Tauri catches exceptions thrown inside a command.
+
+If one of these bites you, please open an issue.
+
 ## Following upstream
 
 `@capacitor-firebase/*` and the Firebase SDK versions they use are pinned exactly. `.github/workflows/follow-upstream.yml`
