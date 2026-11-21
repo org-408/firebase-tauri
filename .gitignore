@@ -12,3 +12,7 @@ node_modules/
 /examples/firebase-tester/src-tauri/target
 /examples/firebase-tester/src-tauri/gen/schemas
 /examples/firebase-tester/dist
+
+# Firebase config of a test project: never commit
+GoogleService-Info.plist
+google-services.json

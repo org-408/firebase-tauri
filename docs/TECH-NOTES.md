@@ -103,3 +103,9 @@ referenced symbol, so it was dropped and Analytics crashed on the first event up
 unrecognized selector` (found 2026-11-21 with the first run against a Firebase test project; with no Firebase config it never
 showed). `src/lib.rs` refers to `GULNSDataZlibErrorDomain`, a symbol of the same object, which keeps it. After the fix all 18
 Firebase checks of `examples/firebase-tester` pass on the iOS Simulator (Xcode 27.0).
+
+### Verification status (2026-11-21)
+
+All 18 Firebase checks of `examples/firebase-tester` pass against a Firebase test project on the iOS Simulator (Xcode 27.0, iOS 27)
+and on an Android emulator (API 36, arm64), next to the 25 plugin checks (no Firebase project needed). **Not verified:** that a
+native crash is collected and reaches the Crashlytics console, and a physical device.
