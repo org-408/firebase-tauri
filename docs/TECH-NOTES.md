@@ -94,3 +94,18 @@ Verified with **Xcode 27.0**. With Xcode 26.6 (the newest on GitHub's macOS runn
 swift-rs calls `swift build --sdk <iOS SDK>`, and Xcode 26's SwiftPM then resolves the Firebase binary frameworks for macOS
 (`'Cocoa/Cocoa.h' file not found` in `FirebaseAnalytics-umbrella.h`). Crashlytics has no binary targets and is checked in CI. Supporting
 Xcode 26 for Analytics is on the ROADMAP.
+
+### Objective-C categories the app's linker drops
+
+Whole-archive only puts every object into the plugin's static library; the app's Xcode project (which Tauri generates without `-ObjC`)
+still pulls an archive member only when something refers to it. GoogleUtilities' `NSData(GULGzip)` is a category with no
+referenced symbol, so it was dropped and Analytics crashed on the first event upload: `+[NSData gul_dataByGzippingData:error:]:
+unrecognized selector` (found 2026-11-21 with the first run against a Firebase test project; with no Firebase config it never
+showed). `src/lib.rs` refers to `GULNSDataZlibErrorDomain`, a symbol of the same object, which keeps it. After the fix all 18
+Firebase checks of `examples/firebase-tester` pass on the iOS Simulator (Xcode 27.0).
+
+### Verification status (2026-11-21)
+
+All 18 Firebase checks of `examples/firebase-tester` pass against a Firebase test project on the iOS Simulator (Xcode 27.0, iOS 27)
+and on an Android emulator (API 36, arm64), next to the 25 plugin checks (no Firebase project needed). **Not verified:** that a
+native crash is collected and reaches the Crashlytics console, and a physical device.
