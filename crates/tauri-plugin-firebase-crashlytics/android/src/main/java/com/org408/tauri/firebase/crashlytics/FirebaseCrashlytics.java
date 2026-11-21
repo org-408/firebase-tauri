@@ -2,6 +2,8 @@
 // modified for Tauri 2 (see NOTICE).
 package com.org408.tauri.firebase.crashlytics;
 
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.firebase.crashlytics.CustomKeysAndValues;
@@ -11,7 +13,11 @@ import org.json.JSONObject;
 public class FirebaseCrashlytics {
 
     public void crash(String message) {
-        throw new RuntimeException(message);
+        // Capacitor throws on the calling thread. Tauri catches what a command throws, so the app would go on: throw from the
+        // main thread's message loop instead, where nothing catches it, and Crashlytics's uncaught exception handler reports it.
+        new Handler(Looper.getMainLooper()).post(() -> {
+            throw new RuntimeException(message);
+        });
     }
 
     public void setCustomKey(String key, String type, PluginCall call) {
