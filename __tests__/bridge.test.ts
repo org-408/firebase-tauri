@@ -3,7 +3,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const invoke = vi.fn();
-vi.mock('@tauri-apps/api/core', () => ({ invoke }));
+const addPluginListener = vi.fn();
+vi.mock('@tauri-apps/api/core', () => ({ invoke, addPluginListener }));
 
 type G = typeof globalThis & Record<string, unknown>;
 const setPlatform = (name: string, platform: string) => {
@@ -72,6 +73,54 @@ describe('FirebaseCrashlytics', () => {
     setPlatform('__TAURI_FIREBASE_CRASHLYTICS__', 'desktop');
     const { FirebaseCrashlytics } = await import('../crates/tauri-plugin-firebase-crashlytics/guest-js/index');
     await expect(FirebaseCrashlytics.crash({ message: 'x' })).rejects.toMatchObject({
+      message: 'Not implemented on web.',
+      code: 'UNIMPLEMENTED',
+    });
+  });
+});
+
+describe('FirebaseMessaging', () => {
+  beforeEach(() => {
+    invoke.mockReset();
+    addPluginListener.mockReset();
+    setPlatform('__TAURI_FIREBASE_MESSAGING__', 'ios');
+  });
+
+  it('calls the command with the options as passed', async () => {
+    invoke.mockResolvedValue(null);
+    const { FirebaseMessaging } = await import('../crates/tauri-plugin-firebase-messaging/guest-js/index');
+    expect(await FirebaseMessaging.subscribeToTopic({ topic: 'news' })).toBeUndefined();
+    expect(invoke).toHaveBeenCalledWith('plugin:firebase-messaging|subscribe_to_topic', { topic: 'news' });
+  });
+
+  it("addListener is Tauri's addPluginListener; remove unregisters it", async () => {
+    const unregister = vi.fn().mockResolvedValue(undefined);
+    addPluginListener.mockResolvedValue({ unregister });
+    const { FirebaseMessaging } = await import('../crates/tauri-plugin-firebase-messaging/guest-js/index');
+    const callback = vi.fn();
+    const handle = await FirebaseMessaging.addListener('tokenReceived', callback);
+    expect(addPluginListener).toHaveBeenCalledWith('firebase-messaging', 'tokenReceived', callback);
+    await handle.remove();
+    expect(unregister).toHaveBeenCalledTimes(1);
+  });
+
+  it('removeAllListeners unregisters every listener once', async () => {
+    const first = vi.fn().mockResolvedValue(undefined);
+    const second = vi.fn().mockResolvedValue(undefined);
+    addPluginListener.mockResolvedValueOnce({ unregister: first }).mockResolvedValueOnce({ unregister: second });
+    const { FirebaseMessaging } = await import('../crates/tauri-plugin-firebase-messaging/guest-js/index');
+    await FirebaseMessaging.addListener('tokenReceived', () => {});
+    await FirebaseMessaging.addListener('notificationReceived', () => {});
+    await FirebaseMessaging.removeAllListeners();
+    await FirebaseMessaging.removeAllListeners();
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('answers on the web as the Capacitor package does', async () => {
+    setPlatform('__TAURI_FIREBASE_MESSAGING__', 'desktop');
+    const { FirebaseMessaging } = await import('../crates/tauri-plugin-firebase-messaging/guest-js/index');
+    await expect(FirebaseMessaging.subscribeToTopic({ topic: 'x' })).rejects.toMatchObject({
       message: 'Not implemented on web.',
       code: 'UNIMPLEMENTED',
     });

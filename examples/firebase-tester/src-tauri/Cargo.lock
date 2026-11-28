@@ -823,6 +823,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-firebase-analytics",
  "tauri-plugin-firebase-crashlytics",
+ "tauri-plugin-firebase-messaging",
 ]
 
 [[package]]
@@ -3418,7 +3419,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-firebase-analytics"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -3429,7 +3430,18 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-firebase-crashlytics"
-version = "0.1.0"
+version = "0.1.1"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tauri-plugin-firebase-messaging"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",

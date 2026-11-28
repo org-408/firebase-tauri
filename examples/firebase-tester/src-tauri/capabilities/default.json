@@ -1,7 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The tester's window: every command of both plugins",
+  "description": "The tester's window: every command of the plugins",
   "windows": ["main"],
-  "permissions": ["core:default", "firebase-analytics:default", "firebase-crashlytics:default"]
+  "permissions": [
+    "core:default",
+    "firebase-analytics:default",
+    "firebase-crashlytics:default",
+    "firebase-messaging:default"
+  ]
 }

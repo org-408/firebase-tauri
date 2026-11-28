@@ -1,11 +1,12 @@
 # firebase-tester
 
-A Tauri app that calls every kind of command of `tauri-plugin-firebase-analytics` and `-crashlytics` on iOS and Android and
+A Tauri app that calls every kind of command of `tauri-plugin-firebase-analytics`, `-crashlytics` and `-messaging` on iOS and Android and
 writes a report (`report.json` in the app's data folder; on Android also logcat, tag `firebase-tester`).
 
 - **plugin** checks need no Firebase project: argument validation and `UNIMPLEMENTED` answers come from the plugins' own code.
 - **firebase** checks call the Firebase SDK. They run after tapping "Use Firebase", and need a Firebase **test** project
   (never a production one): add its `GoogleService-Info.plist` / `google-services.json` as in the repository README.
+  `VITE_FIREBASE=1 npx tauri ... build` makes them run at start without the tap.
   Without the config, iOS logs "Firebase was not configured" and the SDK calls must not be made, so they are skipped.
 
 ```bash

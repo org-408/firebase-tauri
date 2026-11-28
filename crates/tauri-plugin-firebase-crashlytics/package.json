@@ -1,6 +1,6 @@
 {
   "name": "tauri-plugin-firebase-crashlytics-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Firebase Crashlytics for Tauri 2 on iOS and Android: a port of @capacitor-firebase/crashlytics with the same API",
   "license": "MIT AND Apache-2.0",
   "author": "org-408",

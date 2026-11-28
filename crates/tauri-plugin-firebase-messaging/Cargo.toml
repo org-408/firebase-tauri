@@ -1,0 +1,25 @@
+[package]
+name = "tauri-plugin-firebase-messaging"
+description = "Firebase Cloud Messaging (push notifications) for Tauri 2 on iOS and Android: a port of @capacitor-firebase/messaging with the same API"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish.workspace = true
+readme = "README.md"
+links = "tauri-plugin-firebase-messaging"
+exclude = ["/node_modules", "/guest-js", "/dist-js", "/ios/.build", "/ios/.swiftpm", "/android/build", "/android/.gradle"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tauri = { workspace = true }
+
+[build-dependencies]
+tauri-plugin = { workspace = true }

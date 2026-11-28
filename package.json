@@ -1,17 +1,18 @@
 {
   "name": "firebase-tauri-workspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
-  "description": "Tauri 2 plugins for Firebase Analytics and Crashlytics: ports of @capacitor-firebase/analytics and crashlytics",
+  "description": "Tauri 2 plugins for Firebase Analytics, Crashlytics and Messaging: ports of @capacitor-firebase/analytics, crashlytics and messaging",
   "license": "MIT AND Apache-2.0",
   "type": "module",
   "workspaces": [
     "crates/tauri-plugin-firebase-analytics",
     "crates/tauri-plugin-firebase-crashlytics",
+    "crates/tauri-plugin-firebase-messaging",
     "examples/firebase-tester"
   ],
   "scripts": {
-    "build": "npm run build -w tauri-plugin-firebase-analytics-api -w tauri-plugin-firebase-crashlytics-api",
+    "build": "npm run build -w tauri-plugin-firebase-analytics-api -w tauri-plugin-firebase-crashlytics-api -w tauri-plugin-firebase-messaging-api",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "format": "prettier --write .",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@capacitor-firebase/analytics": "8.6.0",
     "@capacitor-firebase/crashlytics": "8.6.0",
+    "@capacitor-firebase/messaging": "8.6.0",
     "@capacitor/core": "^8.0.0",
     "@tauri-apps/api": "^2.12.4",
     "@types/node": "^24.10.1",

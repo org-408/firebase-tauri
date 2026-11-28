@@ -5,6 +5,7 @@ The task number is the GitHub issue number.
 | Task | What                                                                                                                  | State                          |
 | ---- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | #1   | Port `@capacitor-firebase/analytics` and `crashlytics` 8.6.0 (all methods), v0.1.0, and the follow-upstream machinery | Done (v0.1.0, not yet on registries) |
+| #16  | Port `@capacitor-firebase/messaging` 8.6.0 (FCM, push notifications), v0.1.1                                          | In progress (feature/T16-messaging) |
 
 ## Plan: publish to crates.io and npm
 

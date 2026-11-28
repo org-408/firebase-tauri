@@ -11,8 +11,9 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
-    "tauri-plugin-firebase-analytics-api": "0.1.0",
-    "tauri-plugin-firebase-crashlytics-api": "0.1.0"
+    "tauri-plugin-firebase-analytics-api": "0.1.1",
+    "tauri-plugin-firebase-crashlytics-api": "0.1.1",
+    "tauri-plugin-firebase-messaging-api": "0.1.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.4",

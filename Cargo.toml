@@ -1,17 +1,17 @@
 [workspace]
 resolver = "2"
-members = ["crates/tauri-plugin-firebase-analytics", "crates/tauri-plugin-firebase-crashlytics"]
+members = ["crates/tauri-plugin-firebase-analytics", "crates/tauri-plugin-firebase-crashlytics", "crates/tauri-plugin-firebase-messaging"]
 exclude = ["examples/firebase-tester/src-tauri"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.85"
 license = "MIT AND Apache-2.0"
 authors = ["org-408"]
 repository = "https://github.com/org-408/firebase-tauri"
 homepage = "https://github.com/org-408/firebase-tauri"
-keywords = ["tauri", "tauri-plugin", "firebase", "analytics", "crashlytics"]
+keywords = ["tauri", "tauri-plugin", "firebase", "analytics", "crashlytics", "messaging", "fcm"]
 categories = ["api-bindings"]
 # Planned for crates.io, not published yet (docs/WORKFLOW.md §3)
 publish = false

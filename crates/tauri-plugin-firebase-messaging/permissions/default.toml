@@ -1,0 +1,21 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = "Every command: all of @capacitor-firebase/messaging's API, as the Capacitor plugin exposes it, and the listeners for its events"
+permissions = [
+  "allow-check-permissions",
+  "allow-request-permissions",
+  "allow-is-supported",
+  "allow-get-token",
+  "allow-delete-token",
+  "allow-get-delivered-notifications",
+  "allow-remove-delivered-notifications",
+  "allow-remove-all-delivered-notifications",
+  "allow-subscribe-to-topic",
+  "allow-unsubscribe-from-topic",
+  "allow-create-channel",
+  "allow-delete-channel",
+  "allow-list-channels",
+  "allow-register-listener",
+  "allow-remove-listener",
+]

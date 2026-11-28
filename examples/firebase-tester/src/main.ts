@@ -6,11 +6,15 @@
 import { invoke } from '@tauri-apps/api/core';
 import { ConsentStatus, ConsentType, FirebaseAnalytics } from 'tauri-plugin-firebase-analytics-api';
 import { FirebaseCrashlytics } from 'tauri-plugin-firebase-crashlytics-api';
+import { FirebaseMessaging } from 'tauri-plugin-firebase-messaging-api';
 
 type Result = { name: string; kind: 'plugin' | 'firebase'; ok: boolean; detail?: unknown };
 const results: Result[] = [];
+/** What the messaging listeners received (tokens and notifications), shown in the log and in the report */
+const events: unknown[] = [];
 const params = new URLSearchParams(location.search);
-const withFirebase = params.get('firebase') === '1' || localStorage.getItem('firebase') === '1';
+const withFirebase =
+  import.meta.env.VITE_FIREBASE === '1' || params.get('firebase') === '1' || localStorage.getItem('firebase') === '1';
 
 async function check(name: string, kind: Result['kind'], run: () => Promise<unknown>, expectError?: string) {
   if (kind === 'firebase' && !withFirebase) {
@@ -72,6 +76,35 @@ async function runAll() {
     () => FirebaseCrashlytics.setCustomKey({ key: 'k' } as any),
     'value must be provided.',
   );
+  await check(
+    'messaging.subscribeToTopic without topic',
+    'plugin',
+    () => FirebaseMessaging.subscribeToTopic({} as any),
+    // on iOS the "Firebase is not configured" answer comes first when there is no Firebase config
+    withFirebase
+      ? 'topic must be provided.'
+      : platform === 'ios'
+        ? 'Firebase is not configured: GoogleService-Info.plist is missing from the app bundle.'
+        : 'topic must be provided.',
+  );
+  await check(
+    'messaging.removeDeliveredNotifications without notifications',
+    'plugin',
+    () => FirebaseMessaging.removeDeliveredNotifications({} as any),
+    'notifications must be provided.',
+  );
+  await check(
+    'messaging.createChannel',
+    'plugin',
+    () => FirebaseMessaging.createChannel({} as any),
+    platform === 'ios' ? 'Not implemented on iOS.' : 'id and name must be provided.',
+  );
+  await check('messaging.isSupported', 'plugin', () => FirebaseMessaging.isSupported());
+  await check('messaging.addListener / remove', 'plugin', async () => {
+    const handle = await FirebaseMessaging.addListener('tokenReceived', (e) => events.push({ tokenReceived: e }));
+    await handle.remove();
+    return typeof handle.remove;
+  });
   // firebase checks
   await check('analytics.getAppInstanceId', 'firebase', () => FirebaseAnalytics.getAppInstanceId());
   await check('analytics.setEnabled', 'firebase', () => FirebaseAnalytics.setEnabled({ enabled: true }));
@@ -110,11 +143,30 @@ async function runAll() {
   await check('crashlytics.sendUnsentReports', 'firebase', () => FirebaseCrashlytics.sendUnsentReports());
   await check('crashlytics.deleteUnsentReports', 'firebase', () => FirebaseCrashlytics.deleteUnsentReports());
 
+  await check('messaging.checkPermissions', 'firebase', () => FirebaseMessaging.checkPermissions());
+  await check('messaging.getToken', 'firebase', async () => {
+    const { token } = await FirebaseMessaging.getToken();
+    return { length: token.length };
+  });
+  await check('messaging.subscribeToTopic', 'firebase', () => FirebaseMessaging.subscribeToTopic({ topic: 'tester' }));
+  await check('messaging.unsubscribeFromTopic', 'firebase', () =>
+    FirebaseMessaging.unsubscribeFromTopic({ topic: 'tester' }),
+  );
+  await check('messaging.getDeliveredNotifications', 'firebase', () => FirebaseMessaging.getDeliveredNotifications());
+  await check('messaging.listChannels', 'firebase', () =>
+    platform === 'android' ? FirebaseMessaging.listChannels() : Promise.resolve('n/a on iOS'),
+  );
+  await check('messaging.removeAllDeliveredNotifications', 'firebase', () =>
+    FirebaseMessaging.removeAllDeliveredNotifications(),
+  );
+
   const failed = results.filter((r) => !r.ok);
   const summary = `${platform}: ${results.length - failed.length}/${results.length} ok${failed.length ? ', FAILED: ' + failed.map((f) => f.name).join('; ') : ''}`;
   document.getElementById('summary')!.textContent = summary;
   document.getElementById('log')!.textContent = JSON.stringify(results, null, 2);
-  await invoke('save_report', { report: JSON.stringify({ platform, withFirebase, summary, results }, null, 2) });
+  await invoke('save_report', {
+    report: JSON.stringify({ platform, withFirebase, summary, results, events }, null, 2),
+  });
 }
 
 // Crash buttons: a native crash (Crashlytics reports it on the next launch) and a JavaScript error
@@ -129,9 +181,27 @@ addButton('Crash (native)', () => FirebaseCrashlytics.crash({ message: 'tester c
 addButton('Did crash before?', async () => {
   document.getElementById('log')!.textContent = JSON.stringify(await FirebaseCrashlytics.didCrashOnPreviousExecution());
 });
+addButton('Push permission', async () => {
+  document.getElementById('log')!.textContent = JSON.stringify(await FirebaseMessaging.requestPermissions());
+});
+addButton('Show token + events', async () => {
+  const { token } = await FirebaseMessaging.getToken();
+  document.getElementById('log')!.textContent = JSON.stringify({ token, events }, null, 2);
+});
 addButton('Use Firebase', async () => {
   localStorage.setItem('firebase', '1');
   location.reload();
 });
+
+for (const name of [
+  'tokenReceived',
+  'notificationReceived',
+  'notificationActionPerformed',
+  'apnsTokenReceived',
+] as const) {
+  FirebaseMessaging.addListener(name as any, (e: unknown) => events.push({ [name]: e })).catch((e) =>
+    events.push({ [name]: 'addListener failed: ' + (e?.message ?? e) }),
+  );
+}
 
 runAll().catch((e) => (document.getElementById('summary')!.textContent = 'error: ' + (e?.message ?? e)));
