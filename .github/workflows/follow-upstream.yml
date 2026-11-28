@@ -1,6 +1,6 @@
 name: Follow upstream
 
-# The Capacitor packages this repository ports (@capacitor-firebase/analytics and crashlytics) are pinned exactly, and
+# The Capacitor packages this repository ports (@capacitor-firebase/analytics, crashlytics and messaging) are pinned exactly, and
 # so are the Firebase SDK versions they use. Every day this opens a pull request when a new release is out:
 #   - package.json's pinned releases (the reference the apiParity test checks the API against)
 #   - the Firebase iOS SDK (ios/Package.swift) and Android SDK (android/build.gradle.kts) versions, as the new release uses them
@@ -39,12 +39,13 @@ jobs:
           npm install --package-lock-only --ignore-scripts
           analytics=$(node -p "require('./package.json').devDependencies['@capacitor-firebase/analytics']")
           crashlytics=$(node -p "require('./package.json').devDependencies['@capacitor-firebase/crashlytics']")
-          branch="chore/upstream-analytics-$analytics-crashlytics-$crashlytics"
+          messaging=$(node -p "require('./package.json').devDependencies['@capacitor-firebase/messaging']")
+          branch="chore/upstream-analytics-$analytics-crashlytics-$crashlytics-messaging-$messaging"
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then echo "$branch exists"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branch"
-          git commit -am "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics"
+          git commit -am "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics, messaging $messaging"
           git push origin "$branch"
           {
             echo "Follows the upstream releases. CI is started by this workflow (the checks show on the branch's head commit)."
@@ -54,6 +55,6 @@ jobs:
             cat "$RUNNER_TEMP/summary.md"
           } > "$RUNNER_TEMP/body.md"
           gh pr create --base develop --head "$branch" \
-            --title "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics" \
+            --title "chore(deps): follow @capacitor-firebase analytics $analytics, crashlytics $crashlytics, messaging $messaging" \
             --body-file "$RUNNER_TEMP/body.md"
           gh workflow run ci.yml --ref "$branch"

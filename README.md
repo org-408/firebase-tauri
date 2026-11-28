@@ -1,12 +1,13 @@
 # firebase-tauri
 
-[Tauri 2](https://tauri.app) plugins for [Firebase](https://firebase.google.com) **Analytics** and **Crashlytics** on iOS
-and Android: ports of [`@capacitor-firebase/analytics`](https://github.com/capawesome-team/capacitor-firebase/tree/main/packages/analytics)
-and [`@capacitor-firebase/crashlytics`](https://github.com/capawesome-team/capacitor-firebase/tree/main/packages/crashlytics)
+[Tauri 2](https://tauri.app) plugins for [Firebase](https://firebase.google.com) **Analytics**, **Crashlytics** and **Cloud Messaging** (push) on iOS
+and Android: ports of [`@capacitor-firebase/analytics`](https://github.com/capawesome-team/capacitor-firebase/tree/main/packages/analytics),
+[`@capacitor-firebase/crashlytics`](https://github.com/capawesome-team/capacitor-firebase/tree/main/packages/crashlytics)
+and [`@capacitor-firebase/messaging`](https://github.com/capawesome-team/capacitor-firebase/tree/main/packages/messaging)
 that keep their API: the same method names, arguments, results and errors. An app moving from Capacitor to Tauri Mobile
 only changes an import.
 
-Status: **v0.1.0, not published to crates.io / npm yet.** Use it from git for now (see [Install](#install)).
+Status: **v0.1.1, not published to crates.io / npm yet.** Use it from git for now (see [Install](#install)).
 
 **Plan:** the intent is to publish the crates and npm packages. Before that, the plugins are to be adopted in a real app
 (ai-tarot-chat or Fabloom) and shown to work there, and tried on a physical device. See [Known limits](#known-limits) and
@@ -16,8 +17,7 @@ Status: **v0.1.0, not published to crates.io / npm yet.** Use it from git for no
 | ----------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- | ------------------------------------ |
 | [Analytics](crates/tauri-plugin-firebase-analytics/README.md)     | `tauri-plugin-firebase-analytics`    | `tauri-plugin-firebase-analytics-api`    | `@capacitor-firebase/analytics` 8.6.0   |
 | [Crashlytics](crates/tauri-plugin-firebase-crashlytics/README.md) | `tauri-plugin-firebase-crashlytics`  | `tauri-plugin-firebase-crashlytics-api`  | `@capacitor-firebase/crashlytics` 8.6.0 |
-
-Status: **v0.1.0, not published to crates.io or npm yet.** Until then use the git tag (see Install).
+| [Messaging](crates/tauri-plugin-firebase-messaging/README.md)     | `tauri-plugin-firebase-messaging`    | `tauri-plugin-firebase-messaging-api`    | `@capacitor-firebase/messaging` 8.6.0   |
 
 This is an independent community project. It is not affiliated with or endorsed by Google, the Tauri Programme or
 Capawesome, and it is not an official Tauri plugin.
@@ -29,10 +29,10 @@ Tauri's plugin classes, with a small shim (`PluginCall`) standing in for Capacit
 (`definitions.ts`) is copied unchanged. Rust only passes each call through. That is why the API stays identical, and why a
 new upstream release can be followed mechanically (see [Following upstream](#following-upstream)).
 
-| Platform        | What `FirebaseAnalytics` / `FirebaseCrashlytics` do                                                         |
+| Platform        | What `FirebaseAnalytics` / `FirebaseCrashlytics` / `FirebaseMessaging` do                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------- |
 | iOS, Android    | Call the Firebase native SDKs, as the Capacitor plugins do                                                  |
-| Desktop, web    | The Capacitor packages' web behaviour: Analytics uses the Firebase JS SDK (`firebase`, optional peer dependency); Crashlytics rejects with `UNIMPLEMENTED` |
+| Desktop, web    | The Capacitor packages' web behaviour: Analytics uses the Firebase JS SDK (`firebase`, optional peer dependency); Crashlytics rejects with `UNIMPLEMENTED`; Messaging uses the Firebase JS SDK's `firebase/messaging` (a service worker, as upstream) |
 
 ## Install
 
@@ -40,25 +40,27 @@ Not on crates.io or npm yet; use the git tag. In `src-tauri/Cargo.toml`:
 
 ```toml
 [dependencies]
-tauri-plugin-firebase-analytics = { git = "https://github.com/org-408/firebase-tauri", tag = "v0.1.0" }
-tauri-plugin-firebase-crashlytics = { git = "https://github.com/org-408/firebase-tauri", tag = "v0.1.0" }
+tauri-plugin-firebase-analytics = { git = "https://github.com/org-408/firebase-tauri", tag = "v0.1.1" }
+tauri-plugin-firebase-crashlytics = { git = "https://github.com/org-408/firebase-tauri", tag = "v0.1.1" }
+tauri-plugin-firebase-messaging = { git = "https://github.com/org-408/firebase-tauri", tag = "v0.1.1" }
 ```
 
 ```rust
 tauri::Builder::default()
     .plugin(tauri_plugin_firebase_analytics::init())
     .plugin(tauri_plugin_firebase_crashlytics::init())
+    .plugin(tauri_plugin_firebase_messaging::init())
 ```
 
 In `src-tauri/capabilities/default.json`:
 
 ```json
-{ "permissions": ["firebase-analytics:default", "firebase-crashlytics:default"] }
+{ "permissions": ["firebase-analytics:default", "firebase-crashlytics:default", "firebase-messaging:default"] }
 ```
 
 The TypeScript API is built into `dist-js/` and committed, so it installs from git as well (a workspace subfolder:
 copy it, or use a package manager that installs from a git subdirectory). After publishing:
-`npm i tauri-plugin-firebase-analytics-api tauri-plugin-firebase-crashlytics-api`.
+`npm i tauri-plugin-firebase-analytics-api tauri-plugin-firebase-crashlytics-api tauri-plugin-firebase-messaging-api`.
 
 ```ts
 // before (Capacitor)
@@ -96,6 +98,23 @@ like the Capacitor plugins, so the app needs the two config files of your Fireba
    `${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}` and
    `$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)`. Set the build setting `DEBUG_INFORMATION_FORMAT` to
    `DWARF with dSYM File` for release.
+
+### Push notifications (Messaging)
+
+- **iOS:** add the Push Notifications capability to the app's target (an `aps-environment` entitlement), and for silent pushes
+  the `remote-notification` background mode (`UIBackgroundModes` in `Info.plist`). Upload an APNs authentication key
+  (`.p8`) in the Firebase console, under Project settings, Cloud Messaging. The plugin asks iOS to register for remote
+  notifications when it loads; `requestPermissions()` shows the permission prompt. It does not matter whether
+  `FirebaseAppDelegateProxyEnabled` is on: the plugin hands the APNs token to Firebase itself.
+- **Android:** nothing to add. The plugin declares the `POST_NOTIFICATIONS` permission and Firebase's messaging service;
+  Android 13+ asks for the permission on `requestPermissions()`. To choose the small icon, colour or default channel of
+  notifications that Firebase shows while the app is in the background, add the `com.google.firebase.messaging.default_notification_*`
+  meta-data to the app's manifest, as for any FCM app.
+- **Events** (`addListener`): `tokenReceived`, `notificationReceived`, `notificationActionPerformed`, `apnsTokenReceived`
+  (iOS). Events that arrive before the page has a listener are kept and delivered to the first one, as in Capacitor.
+- **Together with `tauri-plugin-notification`:** both use the notification center's delegate on iOS. This plugin takes it one
+  run-loop turn after the plugins have loaded and keeps the delegate that was there, passing every call on to it, so the
+  registration order does not matter. A delegate that the app sets later replaces this plugin's, and the events are lost.
 
 ### Advertising ID (IDFA / `AD_ID`)
 
@@ -168,6 +187,6 @@ See [docs/WORKFLOW.md](docs/WORKFLOW.md) for branches, releases and verification
 
 ## License
 
-MIT for this repository's own code. Portions are derived from `@capacitor-firebase/analytics` and
-`@capacitor-firebase/crashlytics` © Robin Genz and the Capawesome contributors, licensed under the Apache License 2.0.
+MIT for this repository's own code. Portions are derived from `@capacitor-firebase/analytics`,
+`@capacitor-firebase/crashlytics` and `@capacitor-firebase/messaging` © Robin Genz and the Capawesome contributors, licensed under the Apache License 2.0.
 See [LICENSE](LICENSE) (both texts) and [NOTICE](NOTICE).

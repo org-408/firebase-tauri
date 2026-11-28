@@ -63,6 +63,7 @@ jobs:
         run: cargo check --workspace --target aarch64-linux-android
       - run: gradle -p crates/tauri-plugin-firebase-analytics/android compileDebugJavaWithJavac
       - run: gradle -p crates/tauri-plugin-firebase-crashlytics/android compileDebugJavaWithJavac
+      - run: gradle -p crates/tauri-plugin-firebase-messaging/android compileDebugJavaWithJavac
 
   ios:
     if: github.event_name != 'pull_request'

@@ -4,7 +4,7 @@
 //   node scripts/sync-upstream.mjs            bump to the latest releases and sync the Firebase SDK versions
 //   node scripts/sync-upstream.mjs --check    only say what would change (exit 0 either way)
 //
-// What it moves, per package (analytics, crashlytics):
+// What it moves, per package (analytics, crashlytics, messaging):
 //   - the exact `@capacitor-firebase/<name>` version in the root package.json (the reference apiParity tests against)
 //   - the Firebase iOS SDK version in ios/Package.swift and the Firebase Android SDK version in android/build.gradle.kts,
 //     read from the new upstream release, so the native SDKs are the ones the Capacitor plugin uses
@@ -34,6 +34,12 @@ const packages = [
     iface: 'FirebaseCrashlyticsPlugin',
     gradle: 'firebaseCrashlyticsVersion',
     artifact: 'firebase-crashlytics',
+  },
+  {
+    key: 'messaging',
+    iface: 'FirebaseMessagingPlugin',
+    gradle: 'firebaseMessagingVersion',
+    artifact: 'firebase-messaging',
   },
 ];
 

@@ -6,8 +6,9 @@ only the bridge.
 
 ## 1. What was ported from where
 
-Upstream: `capawesome-team/capacitor-firebase` tag `@capacitor-firebase/analytics@8.6.0` and
-`@capacitor-firebase/crashlytics@8.6.0` (commit `b6b63f20`), Apache-2.0.
+Upstream: `capawesome-team/capacitor-firebase` tags `@capacitor-firebase/analytics@8.6.0`,
+`@capacitor-firebase/crashlytics@8.6.0` and `@capacitor-firebase/messaging@8.6.0` (commit `b6b63f20` for the first two; messaging
+was ported on 2026-11-28 from the published 8.6.0 package), Apache-2.0.
 
 | This repository (`crates/tauri-plugin-firebase-<name>/`) | Upstream (`packages/<name>/`)        | How                                                                                                      |
 | -------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -30,17 +31,28 @@ Capacitor rejects with an `Error` that has the plugin's message and, for "not im
 plugins never send `data`, so the marked-result detour that `purchases-tauri` needed (Tauri's Rust side keeps only `code` and
 `message` of a rejection) is not needed here.
 
-## 3. No callbacks
+## 3. Callbacks and events
 
-Neither package has listeners or callbacks, so none of Tauri's Channel machinery is used.
+Analytics and Crashlytics have no listeners. Messaging has four events (`tokenReceived`, `notificationReceived`,
+`notificationActionPerformed`, `apnsTokenReceived`). Capacitor's `addListener` becomes Tauri's `addPluginListener`: the page's
+callback is a Tauri `Channel`; the Swift / Java plugin keeps the channels and sends each event to them. Details:
+
+- The commands are `register_listener` and `remove_listener` (Tauri's names, which `addPluginListener` calls). Rust passes the
+  channel on as a typed `Channel` argument (the generic "pass the page's JSON through" does not carry a channel).
+- On the native side they are called `registerEventListener` / `removeEventListener`. Tauri's own `registerListener` is
+  internal to its Swift `Plugin` class and cannot be replaced from a plugin, and the plugin needs its own list of channels
+  to hold events back (next point). Android uses the same names for symmetry.
+- `retainUntilConsumed`: Capacitor keeps an event that arrives while nobody listens, and delivers it to the first listener.
+  A token or a message often comes before the page has registered, so the plugin does the same.
+- `removeAllListeners` lives in TypeScript (it unregisters the channels this page registered).
 
 ## 4. Where it runs
 
-Rust injects `window.__TAURI_FIREBASE_ANALYTICS__ = { platform }` (and `..._CRASHLYTICS__`). On `ios` and `android` the
+Rust injects `window.__TAURI_FIREBASE_ANALYTICS__ = { platform }` (`..._CRASHLYTICS__` and `..._MESSAGING__`). On `ios` and `android` the
 TypeScript calls the native plugin; elsewhere (Tauri desktop, a plain browser, an app that did not register the plugin) the
-Capacitor packages' web stand-in answers, as Capacitor's `registerPlugin(..., { web })` does. For Analytics that is the
-Firebase JS SDK (`firebase` is an optional peer dependency; the app must call `initializeApp`); for Crashlytics every method
-rejects with `UNIMPLEMENTED`.
+Capacitor packages' web stand-in answers, as Capacitor's `registerPlugin(..., { web })` does. For Analytics and Messaging that
+is the Firebase JS SDK (`firebase` is an optional peer dependency; the app must call `initializeApp`; Messaging also needs
+the service worker and VAPID key as upstream); for Crashlytics every method rejects with `UNIMPLEMENTED`.
 
 ## 5. Return values
 
@@ -71,11 +83,11 @@ From the Firebase SDKs' behaviour; **not yet verified in a running app** (see RO
   the advertising ID or the manifest beyond what `firebase-analytics` merges. **Not verified** together with an AdMob plugin
   in one app; the app that uses both should check the build (duplicate symbols on iOS, merged manifest on Android).
 
-## 8. Two plugins, one Firebase SDK
+## 8. Several plugins, one Firebase SDK
 
-On iOS each Tauri plugin is a static library that includes its Swift package dependencies, so both plugins contain
-`FirebaseCore`. The linker takes duplicate symbols from the first library, so the two plugins must pin the same Firebase iOS
-SDK version. `apiParity` checks the two `Package.swift` files against upstream, which pins one version for both.
+On iOS each Tauri plugin is a static library that includes its Swift package dependencies, so all plugins contain
+`FirebaseCore`. The linker takes duplicate symbols from the first library, so the plugins must pin the same Firebase iOS
+SDK version. `apiParity` checks the `Package.swift` files against upstream, which pins one version for both.
 
 ## 9. iOS: Firebase Analytics' binary frameworks
 
@@ -111,3 +123,39 @@ and on an Android emulator (API 36, arm64), next to the 25 plugin checks (no Fir
 the plugin's frame `FirebaseCrashlytics.java:19`. `crash()` on Android had no effect at first (Tauri catches what a command throws); it now
 throws from the main thread's message loop and the app dies with `FATAL EXCEPTION: main` (2026-11-21).
 **Not verified:** a crash on iOS reaching the console (needs the dSYM upload step in the README), Analytics events in the console, a physical device.
+
+## 10. Messaging (FCM, push notifications)
+
+Ported 2026-11-28 (Issue #16) from `@capacitor-firebase/messaging` 8.6.0, which was the latest release, so the other two ports
+did not have to move first. What differs from upstream, all of it on the native side because a Tauri app has no Capacitor
+`AppDelegate` and no `NotificationRouter`:
+
+| Upstream (Capacitor)                                                        | Here                                                                                                                  |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| iOS `capacitorDidRegisterForRemoteNotifications` (posted by Capacitor's AppDelegate) | `AppDelegateHooks.swift` wraps `application:didRegisterForRemoteNotificationsWithDeviceToken:` of the app's delegate class; the wrapper calls the original first, hands the token to `Messaging.apnsToken` and emits `apnsTokenReceived` |
+| iOS `didReceiveRemoteNotification` notification (silent push)               | The same wrapper for `application:didReceiveRemoteNotification:fetchCompletionHandler:`; with no original method it answers `.noData` |
+| iOS `bridge.notificationRouter.pushNotificationHandler = self`              | The plugin is the `UNUserNotificationCenter` delegate, installed one run-loop turn after all plugins loaded; it forwards `willPresent` (the options are the union of both) and `didReceive` to the delegate that was there before |
+| iOS `getConfig().getArray("presentationOptions")`                           | `plugins.firebase-messaging.presentationOptions` in `tauri.conf.json` (`Builder::<R, Config>`; the Swift side reads the same JSON with `parseConfig`) |
+| Android `staticBridge` and `bridge.getPlugin("FirebaseMessaging")`          | A static `instance`, set in `load`; the service (`MessagingService`, declared in the plugin's manifest) finds the plugin through it, and queues tokens and messages that come before `load`, as upstream |
+| Android `@CapacitorPlugin(permissions = ...)`, `requestPermissionForAlias` | `@TauriPlugin(permissions = @Permission(...))` with the alias `receive`; Tauri's own `checkPermissions` / `requestPermissions` do the work (below Android 13 the answer is `granted`, as upstream) |
+| Android `handleOnNewIntent`                                                 | `Plugin.onNewIntent`                                                                                                  |
+| `WebColor.parseColor` (Capacitor util)                                      | A copy of its rule: `#RRGGBBAA` has the alpha last                                                                     |
+
+Possible gaps (not checked against upstream's behaviour): a notification that **starts** the app (a tap while it is closed) may not be reported on Android, because `onNewIntent` is not called for the launch intent; and `notificationActionPerformed` for iOS reaches the page only if this plugin's delegate is
+still the notification center's delegate.
+
+### Verification status (messaging)
+
+Verified 2026-11-28 with `examples/firebase-tester` against the Firebase test project, on the iOS Simulator (Xcode 27.0, iOS 27) and an
+Android emulator (API 36, arm64): all 37 checks pass on both (25 plugin and 12 messaging checks, of which 7 call the Firebase SDK):
+`isSupported`, `checkPermissions` (`prompt`), `getToken` (an FCM token), `subscribeToTopic`, `unsubscribeFromTopic`,
+`getDeliveredNotifications`, `removeAllDeliveredNotifications`, `listChannels` (Android), `addListener` and its `remove`, and the
+argument and `UNIMPLEMENTED` answers. Both platforms delivered `tokenReceived` to a listener registered after the event
+happened (the retain rule), and iOS also `apnsTokenReceived` (the app-delegate wrapper works in the simulator).
+A first run found a bug: with no `plugins.firebase-messaging` in `tauri.conf.json` Tauri passes `null` and the plugin refused to
+start (`invalid type: null, expected struct Config`); the config is now an `Option`.
+
+**Not verified:** a push actually delivered (needs a send from the Firebase console or an FCM server key), so `notificationReceived`
+and `notificationActionPerformed` have not been seen firing, on either platform; `requestPermissions()` (it shows a system
+prompt); `createChannel` and `deleteChannel` with real arguments; the silent-push path of the app-delegate wrapper; a physical device;
+coexistence with `tauri-plugin-notification` (the delegate chaining); the web stand-in; Android below 13.

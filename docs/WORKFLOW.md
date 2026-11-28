@@ -16,15 +16,16 @@ here is written down.
 ## 2. Versions
 
 - `vX.Y.Z`; `v0.x.y` until the API is considered stable. Breaking changes bump x, fixes and additions bump y.
-- One version for everything: `Cargo.toml` (`workspace.package.version`), the root `package.json`, and the two
-  `crates/*/package.json`. The `apiParity` test checks they agree.
+- One version for everything: `Cargo.toml` (`workspace.package.version`), the root `package.json`, and the
+  `crates/*/package.json` (and the example app's pins of them). The `apiParity` test checks they agree.
 - When a change that raises the version reaches `develop`, `.github/workflows/auto-tag.yml` tags the merge commit
   `v<version>` (annotated).
 
 ## 3. Publishing (not done yet)
 
-- Names (free on 2026-11-20): crates.io `tauri-plugin-firebase-analytics`, `tauri-plugin-firebase-crashlytics`; npm
-  `tauri-plugin-firebase-analytics-api`, `tauri-plugin-firebase-crashlytics-api` (the official-plugin naming scheme, without
+- Names (free on 2026-11-20; messaging's on 2026-11-28 to be checked again before publishing): crates.io `tauri-plugin-firebase-analytics`,
+  `tauri-plugin-firebase-crashlytics`, `tauri-plugin-firebase-messaging`; npm `tauri-plugin-firebase-analytics-api`,
+  `tauri-plugin-firebase-crashlytics-api`, `tauri-plugin-firebase-messaging-api` (the official-plugin naming scheme, without
   claiming to be official).
 - To publish: remove `publish = false` in `Cargo.toml`, then `cargo publish -p <crate>` and `npm publish -w <package>`.
   Do this only after the maintainers confirm.
@@ -44,8 +45,8 @@ here is written down.
 
 ## 6. Following upstream
 
-Upstream is `capawesome-team/capacitor-firebase`; the ported packages are `@capacitor-firebase/analytics` and
-`@capacitor-firebase/crashlytics`, pinned exactly in the root `package.json`.
+Upstream is `capawesome-team/capacitor-firebase`; the ported packages are `@capacitor-firebase/analytics`,
+`crashlytics` and `messaging`, pinned exactly in the root `package.json`.
 
 1. `.github/workflows/follow-upstream.yml` (daily, or by hand) runs `scripts/sync-upstream.mjs`. When a release is newer
    it opens a PR that moves the pins and the Firebase iOS and Android SDK versions (read from the new release's

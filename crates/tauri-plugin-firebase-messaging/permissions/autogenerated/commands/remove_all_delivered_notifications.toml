@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-remove-all-delivered-notifications"
+description = "Enables the remove_all_delivered_notifications command without any pre-configured scope."
+commands.allow = ["remove_all_delivered_notifications"]
+
+[[permission]]
+identifier = "deny-remove-all-delivered-notifications"
+description = "Denies the remove_all_delivered_notifications command without any pre-configured scope."
+commands.deny = ["remove_all_delivered_notifications"]

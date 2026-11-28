@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 
 ---
 
-Portions of this software are derived from @capacitor-firebase/analytics and @capacitor-firebase/crashlytics
+Portions of this software are derived from @capacitor-firebase/analytics, @capacitor-firebase/crashlytics and @capacitor-firebase/messaging
 (https://github.com/capawesome-team/capacitor-firebase), licensed as follows:
 
                                  Apache License
