@@ -51,6 +51,8 @@ public class FirebaseMessagingPlugin extends Plugin {
     public static FirebaseMessagingPlugin instance = null;
     public static String lastToken = null;
     private static final List<RemoteMessage> pendingRemoteMessages = new ArrayList<>();
+    // The notification whose tap was reported last: the launch intent is still there after the activity is recreated
+    private static String lastActionMessageId = null;
     private final Map<String, List<JSObject>> retainedEvents = new HashMap<>();
     private final Activity activity;
     private FirebaseMessaging implementation;
@@ -75,15 +77,32 @@ public class FirebaseMessagingPlugin extends Plugin {
             handleTokenReceived(lastToken);
             lastToken = null;
         }
+
+        // A tap on a notification while the app was closed starts the activity with the message in its intent, and
+        // `onNewIntent` is not called for that (Capacitor's plugin only has `handleOnNewIntent`)
+        Intent launchIntent = activity.getIntent();
+        if (launchIntent != null) {
+            handleNotificationIntent(launchIntent);
+        }
+    }
+
+    /** Reports the tap on a notification that an intent carries, once per message */
+    private void handleNotificationIntent(Intent intent) {
+        Bundle bundle = intent.getExtras();
+        if (bundle != null && bundle.containsKey("google.message_id")) {
+            String id = String.valueOf(bundle.get("google.message_id"));
+            if (id.equals(lastActionMessageId)) {
+                return;
+            }
+            lastActionMessageId = id;
+            this.handleNotificationActionPerformed(bundle);
+        }
     }
 
     @Override
     public void onNewIntent(Intent data) {
         super.onNewIntent(data);
-        Bundle bundle = data.getExtras();
-        if (bundle != null && bundle.containsKey("google.message_id")) {
-            this.handleNotificationActionPerformed(bundle);
-        }
+        handleNotificationIntent(data);
     }
 
     public static void onNewToken(@NonNull String token) {
