@@ -154,7 +154,10 @@ What has been run, and what has not (details: [docs/TECH-NOTES.md §9](docs/TECH
 - A Rust `panic!` on Android: it needs `firebase-crashlytics-ndk`, which is not wired in or tried.
 - Messaging: pushes sent from the Firebase console reached an Android emulator: `notificationReceived` with the app in the
   foreground, and with it in the background the system notification, whose tap gave `notificationActionPerformed`
-  (`actionId: "tap"`). Not tried: a push on iOS, the app closed (a tap that starts it), silent pushes, the permission prompt,
+  (`actionId: "tap"`). On a Pixel 6a (2026-11-28) a push reached the app closed (swiped out of the recent apps) and its tap
+  started the app and gave `notificationActionPerformed`. Known gap: if Android only kills the process and keeps the task
+  (the notification then restores it), the tap reaches the activity before the plugin is loaded and is not reported
+  (`onNewIntent` is called before `load`; it is not fixed). Not tried: a push on iOS, silent pushes, the permission prompt,
   and the delegate chaining with `tauri-plugin-notification`.
 
 **Limits you will meet:**

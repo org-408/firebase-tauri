@@ -141,7 +141,7 @@ did not have to move first. What differs from upstream, all of it on the native 
 | Android `handleOnNewIntent`                                                 | `Plugin.onNewIntent`                                                                                                  |
 | `WebColor.parseColor` (Capacitor util)                                      | A copy of its rule: `#RRGGBBAA` has the alpha last                                                                     |
 
-Possible gaps (not checked against upstream's behaviour): a notification that **starts** the app (a tap while it is closed) may not be reported on Android, because `onNewIntent` is not called for the launch intent; and `notificationActionPerformed` for iOS reaches the page only if this plugin's delegate is
+Possible gaps (not checked against upstream's behaviour): `notificationActionPerformed` for a tap that **starts** the app on Android is reported from the launch intent in `load` (see below); and `notificationActionPerformed` for iOS reaches the page only if this plugin's delegate is
 still the notification center's delegate.
 
 ### Verification status (messaging)
@@ -162,8 +162,17 @@ emulator's FCM token only) reached the app in the foreground as `notificationRec
 notification and no `notificationReceived` was sent (a notification message does not reach `onMessageReceived` then, as in any FCM app). Tapping it
 brought the app forward and `notificationActionPerformed` reached the page with `actionId: "tap"`, the message `id` and the payload `data`
 (`from`, `collapse_key`, `google.*`; `title` and `body` are not in it, because that path reads the intent's extras, as upstream does).
-The tap worked with the app alive in the background; a tap that **starts** the app from closed was not tried.
+The tap worked with the app alive in the background.
 
-**Not verified:** a push delivered on iOS; a push or tap with the app closed; `requestPermissions()` (it shows a system
-prompt); `createChannel` and `deleteChannel` with real arguments; the silent-push path of the app-delegate wrapper; a physical device;
+**Tap that starts the app, Android (2026-11-28, Pixel 6a):** `onNewIntent` is not called for the launch intent, so `load` reads
+`activity.getIntent()` (`google.message_id` in its extras) once per message id. Checked with the app swiped out of the recent
+apps, a console test message to that device only: the notification was shown, the tap started the app, the event was retained
+until the page's listener existed and then reached it (`actionId: "tap"`, message `id`, `data`). **Gap, not fixed:** when only the
+process was killed (`am kill`) and the task stayed, the notification restores that task and Android calls `onNewIntent` before
+Tauri has loaded the plugin (`PluginManager` iterates the plugins loaded so far), while `getIntent()` is the task's old root
+intent without extras: that tap is not reported. Fixing it needs the intent before plugin load (an activity of the app), which a
+plugin cannot add.
+
+**Not verified:** a push delivered on iOS; the tap after a process kill that keeps the task (gap above); `requestPermissions()` (it shows a system
+prompt); `createChannel` and `deleteChannel` with real arguments; the silent-push path of the app-delegate wrapper;
 coexistence with `tauri-plugin-notification` (the delegate chaining); the web stand-in; Android below 13.
