@@ -152,9 +152,10 @@ What has been run, and what has not (details: [docs/TECH-NOTES.md §9](docs/TECH
 - Analytics events showing up in the Firebase console (the calls return without error; the console
   side has not been looked at).
 - A Rust `panic!` on Android: it needs `firebase-crashlytics-ndk`, which is not wired in or tried.
-- Messaging: a push sent from the Firebase console reached an Android emulator (`notificationReceived`, app in the
-  foreground). Not tried: a push on iOS, a tap on a notification (`notificationActionPerformed`), a push while the app is in
-  the background or closed, silent pushes, the permission prompt, and the delegate chaining with `tauri-plugin-notification`.
+- Messaging: pushes sent from the Firebase console reached an Android emulator: `notificationReceived` with the app in the
+  foreground, and with it in the background the system notification, whose tap gave `notificationActionPerformed`
+  (`actionId: "tap"`). Not tried: a push on iOS, the app closed (a tap that starts it), silent pushes, the permission prompt,
+  and the delegate chaining with `tauri-plugin-notification`.
 
 **Limits you will meet:**
 
