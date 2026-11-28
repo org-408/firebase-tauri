@@ -155,7 +155,9 @@ happened (the retain rule), and iOS also `apnsTokenReceived` (the app-delegate w
 A first run found a bug: with no `plugins.firebase-messaging` in `tauri.conf.json` Tauri passes `null` and the plugin refused to
 start (`invalid type: null, expected struct Config`); the config is now an `Option`.
 
-**Not verified:** a push actually delivered (needs a send from the Firebase console or an FCM server key), so `notificationReceived`
-and `notificationActionPerformed` have not been seen firing, on either platform; `requestPermissions()` (it shows a system
+**Push delivery, Android (2026-11-28):** one test message sent from the Firebase console (Messaging, a notification campaign, "send test message" to the
+emulator's FCM token only) reached the app in the foreground as `notificationReceived` with `title`, `body`, `id` and `tag`, on the Android emulator.
+
+**Not verified:** a push delivered on iOS, and `notificationActionPerformed` (a tap) on either platform; a push received while the app is in the background or closed; `requestPermissions()` (it shows a system
 prompt); `createChannel` and `deleteChannel` with real arguments; the silent-push path of the app-delegate wrapper; a physical device;
 coexistence with `tauri-plugin-notification` (the delegate chaining); the web stand-in; Android below 13.
