@@ -158,6 +158,12 @@ start (`invalid type: null, expected struct Config`); the config is now an `Opti
 **Push delivery, Android (2026-11-28):** one test message sent from the Firebase console (Messaging, a notification campaign, "send test message" to the
 emulator's FCM token only) reached the app in the foreground as `notificationReceived` with `title`, `body`, `id` and `tag`, on the Android emulator.
 
-**Not verified:** a push delivered on iOS, and `notificationActionPerformed` (a tap) on either platform; a push received while the app is in the background or closed; `requestPermissions()` (it shows a system
+**Background and tap, Android (2026-11-28):** with the app in the background (a second console test message, to the emulator only), the system showed the
+notification and no `notificationReceived` was sent (a notification message does not reach `onMessageReceived` then, as in any FCM app). Tapping it
+brought the app forward and `notificationActionPerformed` reached the page with `actionId: "tap"`, the message `id` and the payload `data`
+(`from`, `collapse_key`, `google.*`; `title` and `body` are not in it, because that path reads the intent's extras, as upstream does).
+The tap worked with the app alive in the background; a tap that **starts** the app from closed was not tried.
+
+**Not verified:** a push delivered on iOS; a push or tap with the app closed; `requestPermissions()` (it shows a system
 prompt); `createChannel` and `deleteChannel` with real arguments; the silent-push path of the app-delegate wrapper; a physical device;
 coexistence with `tauri-plugin-notification` (the delegate chaining); the web stand-in; Android below 13.
